@@ -88,7 +88,8 @@ export class OrdersService {
       return await this.orderModel.create({
         customerId: dto.customerId,
         items,
-        total: total,
+        // Se redondea a 2 decimales: 0.2 * 3 en coma flotante da 0.6000000000000001.
+        total: Math.round(total * 100) / 100,
         status: 'pending',
       });
     } catch (error) {
