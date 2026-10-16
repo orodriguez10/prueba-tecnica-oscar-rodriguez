@@ -4,11 +4,20 @@ import { get } from '../api';
 export default function OrderList() {
   const [orders, setOrders] = useState([]);
   const [status, setStatus] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const load = () => {
-      get(`/orders?status=${status}`).then((data) => setOrders(data));
+      get(`/orders?status=${status}`)
+        .then((data) => {
+          setOrders(data);
+          setError(null);
+        })
+        .catch((err) => setError(err.message))
+        .finally(() => setLoading(false));
     };
+    setLoading(true);
     load();
     const id = setInterval(load, 5000);
     return () => clearInterval(id);
@@ -24,9 +33,14 @@ export default function OrderList() {
           <option value="shipped">Enviados</option>
           <option value="cancelled">Cancelados</option>
         </select>
+        {loading && <span className="muted">Cargando...</span>}
       </div>
 
+      {error && <p className="error">Error cargando pedidos: {error}</p>}
       <p className="muted">{orders.length} pedidos</p>
+      {!loading && !error && orders.length === 0 && (
+        <p className="muted">No hay pedidos con este filtro</p>
+      )}
 
       <table className="table">
         <thead>
