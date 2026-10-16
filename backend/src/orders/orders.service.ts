@@ -20,23 +20,28 @@ export class OrdersService {
       filter.status = status;
     }
 
-    const orders = await this.orderModel.find(filter).sort({ createdAt: -1 });
+    const orders = await this.orderModel.find(filter).sort({ createdAt: -1 }).lean();
 
-    const result = [];
-    for (const order of orders) {
-      const data = order.toObject();
-      const customer = await this.customerModel.findById(data.customerId);
+    // Una sola consulta para todos los clientes y otra para todos los productos.
+    const customerIds = [...new Set(orders.map((o) => o.customerId.toString()))];
+    const productIds = [
+      ...new Set(orders.flatMap((o) => o.items.map((i) => i.productId.toString()))),
+    ];
+    const [customers, products] = await Promise.all([
+      this.customerModel.find({ _id: { $in: customerIds } }).lean(),
+      this.productModel.find({ _id: { $in: productIds } }).lean(),
+    ]);
+    const customerById = new Map(customers.map((c) => [c._id.toString(), c]));
+    const productById = new Map(products.map((p) => [p._id.toString(), p]));
 
-      const items = [];
-      for (const item of data.items) {
-        const product = await this.productModel.findById(item.productId);
-        items.push({ ...item, product });
-      }
-
-      result.push({ ...data, customer, items });
-    }
-
-    return result;
+    return orders.map((order) => ({
+      ...order,
+      customer: customerById.get(order.customerId.toString()),
+      items: order.items.map((item) => ({
+        ...item,
+        product: productById.get(item.productId.toString()),
+      })),
+    }));
   }
 
   async findOne(id: string) {
