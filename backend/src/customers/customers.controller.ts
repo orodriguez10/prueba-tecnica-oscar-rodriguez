@@ -1,5 +1,5 @@
 import { ApiTags } from '@nestjs/swagger';
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Param, Query } from '@nestjs/common';
 import { CustomersService } from './customers.service';
 import { ParseObjectIdPipe } from '../common/parse-object-id.pipe';
 
@@ -15,6 +15,10 @@ export class CustomersController {
 
   @Get('by-email')
   findByEmail(@Query('email') email: string) {
+    // Debe ser texto con formato de email; así no se aceptan objetos tipo ?email[$ne]=x.
+    if (typeof email !== 'string' || !/^\S+@\S+\.\S+$/.test(email)) {
+      throw new BadRequestException('Email inválido');
+    }
     return this.customersService.findByEmail(email);
   }
 

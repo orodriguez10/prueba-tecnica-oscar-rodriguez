@@ -1,5 +1,6 @@
 import { ApiTags } from '@nestjs/swagger';
 import {
+  BadRequestException,
   Body,
   Controller,
   DefaultValuePipe,
@@ -12,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateStatusDto } from './dto/update-status.dto';
+import { ORDER_STATUSES, UpdateStatusDto } from './dto/update-status.dto';
 import { ParseObjectIdPipe } from '../common/parse-object-id.pipe';
 
 @ApiTags('Pedidos')
@@ -22,6 +23,10 @@ export class OrdersController {
 
   @Get()
   findAll(@Query('status') status?: string) {
+    // Solo se aceptan estados válidos (evita también consultas tipo ?status[$ne]=x).
+    if (status && !ORDER_STATUSES.includes(status)) {
+      throw new BadRequestException('Estado inválido');
+    }
     return this.ordersService.findAll(status);
   }
 

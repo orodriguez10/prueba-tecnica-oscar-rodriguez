@@ -1,6 +1,8 @@
 import { IsIn } from 'class-validator';
 
+export const ORDER_STATUSES = ['pending', 'paid', 'shipped', 'cancelled'];
+
 export class UpdateStatusDto {
-  @IsIn(['pending', 'paid', 'shipped', 'cancelled'])
+  @IsIn(ORDER_STATUSES)
   status: string;
 }
