@@ -9,7 +9,7 @@ function ProductCard({ product, onAdd, style }) {
       <div className="card-footer">
         <strong>${product.price}</strong>
         <small>Stock: {product.stock}</small>
-        <button onClick={onAdd} disabled={product.stock === 0}>
+        <button onClick={() => onAdd(product)} disabled={product.stock === 0}>
           Agregar
         </button>
       </div>

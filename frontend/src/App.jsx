@@ -1,19 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { CartProvider } from './context/CartContext';
 import ProductList from './components/ProductList';
 import Cart from './components/Cart';
 import OrderList from './components/OrderList';
 import Stats from './components/Stats';
+import Clock from './components/Clock';
 
 export default function App() {
   const [tab, setTab] = useState('products');
-  const [now, setNow] = useState(new Date());
-
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
-
   return (
     <CartProvider>
       <header className="header">
@@ -29,7 +23,7 @@ export default function App() {
             Estadísticas
           </button>
         </nav>
-        <span className="clock">{now.toLocaleTimeString()}</span>
+        <Clock />
       </header>
 
       <main className="layout">

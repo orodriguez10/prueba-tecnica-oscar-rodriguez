@@ -1,43 +1,51 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { get } from '../api';
 import { useCart } from '../context/CartContext';
 import ProductCard from './ProductCard';
 
 function sortProducts(products, sortBy) {
-  const copy = [...products];
-  for (let i = 0; i < copy.length; i++) {
-    for (let j = 0; j < copy.length - i - 1; j++) {
-      const a = sortBy === 'price' ? copy[j].price : copy[j].name;
-      const b = sortBy === 'price' ? copy[j + 1].price : copy[j + 1].name;
-      if (a > b) {
-        const tmp = copy[j];
-        copy[j] = copy[j + 1];
-        copy[j + 1] = tmp;
-      }
-    }
-  }
-  return copy;
+  return [...products].sort((a, b) =>
+    sortBy === 'price' ? a.price - b.price : a.name.localeCompare(b.name)
+  );
 }
+
+// Objetos fijos: si se crearan en cada render, ProductCard (memo) se re-renderizaría siempre.
+const CARD_STYLE_LOW = { borderColor: 'orange' };
+const CARD_STYLE_OK = { borderColor: '#ddd' };
 
 export default function ProductList() {
   const { addToCart } = useCart();
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [category, setCategory] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [loading, setLoading] = useState(false);
 
+  // Espera a que el usuario deje de escribir antes de consultar la API.
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(id);
+  }, [search]);
+
   useEffect(() => {
     setLoading(true);
-    get(`/products?search=${search}`).then((data) => {
+    get(`/products?search=${debouncedSearch}`).then((data) => {
       setProducts(data);
       setLoading(false);
     });
-  }, [search]);
+  }, [debouncedSearch]);
 
-  const categories = [...new Set(products.map((p) => p.category))];
-  const filtered = products.filter((p) => !category || p.category === category);
-  const sorted = sortProducts(filtered, sortBy);
+  // Solo se recalculan cuando cambian los datos o los filtros, no en cada render.
+  const categories = useMemo(() => [...new Set(products.map((p) => p.category))], [products]);
+  const sorted = useMemo(
+    () =>
+      sortProducts(
+        products.filter((p) => !category || p.category === category),
+        sortBy
+      ),
+    [products, category, sortBy]
+  );
 
   return (
     <div>
@@ -65,12 +73,12 @@ export default function ProductList() {
       <p className="muted">{sorted.length} productos</p>
 
       <div className="grid">
-        {sorted.map((product, index) => (
+        {sorted.map((product) => (
           <ProductCard
-            key={index}
+            key={product._id}
             product={product}
-            onAdd={() => addToCart(product)}
-            style={{ borderColor: product.stock < 5 ? 'orange' : '#ddd' }}
+            onAdd={addToCart}
+            style={product.stock < 5 ? CARD_STYLE_LOW : CARD_STYLE_OK}
           />
         ))}
       </div>
