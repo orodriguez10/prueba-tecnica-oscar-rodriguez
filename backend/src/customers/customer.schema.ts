@@ -11,7 +11,8 @@ export class Customer {
   @Prop({ required: true })
   email: string;
 
-  @Prop({ required: true })
+  // select: false evita que la contraseña salga en las respuestas de la API.
+  @Prop({ required: true, select: false })
   password: string;
 
   @Prop()
