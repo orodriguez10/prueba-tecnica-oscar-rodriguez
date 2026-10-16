@@ -38,6 +38,9 @@ npm install
 npm run dev
 ```
 
+### Documentación de la API
+Con el backend levantado, la documentación Swagger está en http://localhost:3000/api/docs
+
 ### Estructura
 
 ```
