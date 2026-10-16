@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react';
-import { get } from '../api';
+import { get, patch } from '../api';
+
+const STATUS_LABELS = {
+  pending: 'Pendiente',
+  paid: 'Pagado',
+  shipped: 'Enviado',
+  cancelled: 'Cancelado',
+};
 
 export default function OrderList() {
   const [orders, setOrders] = useState([]);
@@ -22,6 +29,17 @@ export default function OrderList() {
     const id = setInterval(load, 5000);
     return () => clearInterval(id);
   }, [status]);
+
+  const changeStatus = async (orderId, newStatus) => {
+    try {
+      const updated = await patch(`/orders/${orderId}/status`, { status: newStatus });
+      setOrders((prev) =>
+        prev.map((o) => (o._id === orderId ? { ...o, status: updated.status } : o))
+      );
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
   return (
     <div>
@@ -58,7 +76,19 @@ export default function OrderList() {
               <td>{new Date(order.createdAt).toLocaleDateString()}</td>
               <td>{order.customer?.name}</td>
               <td>{order.items.map((i) => i.product?.name).join(', ')}</td>
-              <td>{order.status}</td>
+              <td>
+                <select
+                  className={`status status-${order.status}`}
+                  value={order.status}
+                  onChange={(e) => changeStatus(order._id, e.target.value)}
+                >
+                  {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </td>
               <td>${order.total}</td>
             </tr>
           ))}

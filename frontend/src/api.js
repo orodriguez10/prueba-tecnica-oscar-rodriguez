@@ -23,3 +23,13 @@ export async function post(path, body) {
     })
   );
 }
+
+export async function patch(path, body) {
+  return handle(
+    await fetch(API_URL + path, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+  );
+}

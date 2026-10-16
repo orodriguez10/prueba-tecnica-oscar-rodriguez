@@ -44,3 +44,9 @@ button.primary { background: #2563eb; color: #fff; border-color: #2563eb; width:
 
 .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; margin: 16px 0; }
 .pagination select { padding: 6px; border: 1px solid #ccc; border-radius: 6px; }
+
+.status { padding: 4px 8px; font-size: 12px; font-weight: 600; border: 0; border-radius: 999px; }
+.status-pending { background: #fef3c7; color: #92400e; }
+.status-paid { background: #dcfce7; color: #166534; }
+.status-shipped { background: #dbeafe; color: #1e40af; }
+.status-cancelled { background: #fee2e2; color: #991b1b; }
