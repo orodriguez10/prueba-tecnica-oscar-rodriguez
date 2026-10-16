@@ -7,6 +7,10 @@ import { Customer } from '../customers/customer.schema';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { buildSearchRegex } from '../common/search-regex';
 import { ListOrdersDto } from './dto/list-orders.dto';
+import { ORDER_STATUSES } from './dto/update-status.dto';
+
+// Un producto con menos unidades que este valor se considera de stock bajo.
+const LOW_STOCK_LIMIT = 5;
 
 @Injectable()
 export class OrdersService {
@@ -133,6 +137,77 @@ export class OrdersService {
     order.status = status;
     await order.save();
     return order;
+  }
+
+  // Indicadores generales. Los pedidos cancelados no cuentan como ingreso.
+  // Los meses se calculan en UTC, igual que las fechas guardadas en Mongo.
+  async summary() {
+    const now = new Date();
+    const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+
+    const [[result], statusCounts, ordersThisMonth, lowStockProducts] = await Promise.all([
+      this.orderModel.aggregate([
+        {
+          $group: {
+            _id: null,
+            totalOrders: { $sum: 1 },
+            revenue: { $sum: { $cond: [{ $ne: ['$status', 'cancelled'] }, '$total', 0] } },
+            validOrders: { $sum: { $cond: [{ $ne: ['$status', 'cancelled'] }, 1, 0] } },
+          },
+        },
+      ]),
+      this.orderModel.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
+      this.orderModel.countDocuments({ createdAt: { $gte: monthStart } }),
+      this.productModel.countDocuments({ stock: { $lt: LOW_STOCK_LIMIT } }),
+    ]);
+
+    const { totalOrders = 0, revenue = 0, validOrders = 0 } = result ?? {};
+    // Todos los estados aparecen en el resultado, aunque no tengan pedidos.
+    const byStatus = Object.fromEntries(ORDER_STATUSES.map((status) => [status, 0]));
+    for (const { _id, count } of statusCounts) byStatus[_id] = count;
+
+    return {
+      byStatus,
+      totalOrders,
+      ordersThisMonth,
+      lowStockProducts,
+      lowStockLimit: LOW_STOCK_LIMIT,
+      revenue: Math.round(revenue * 100) / 100,
+      averageTicket: validOrders ? Math.round((revenue / validOrders) * 100) / 100 : 0,
+    };
+  }
+
+  // Por mes: ingresos y pedidos válidos (sin cancelados) y número de pedidos cancelados.
+  // Incluye los meses sin movimiento, con valores en 0.
+  async salesByMonth(months: number) {
+    const now = new Date();
+    const since = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (months - 1), 1));
+    const isCancelled = { $eq: ['$status', 'cancelled'] };
+
+    const rows = await this.orderModel.aggregate([
+      { $match: { createdAt: { $gte: since } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m', date: '$createdAt' } },
+          revenue: { $sum: { $cond: [isCancelled, 0, '$total'] } },
+          orders: { $sum: { $cond: [isCancelled, 0, 1] } },
+          cancelled: { $sum: { $cond: [isCancelled, 1, 0] } },
+        },
+      },
+    ]);
+    const byMonth = new Map(rows.map((r) => [r._id, r]));
+
+    return Array.from({ length: months }, (_, i) => {
+      const date = new Date(Date.UTC(since.getUTCFullYear(), since.getUTCMonth() + i, 1));
+      const month = date.toISOString().slice(0, 7);
+      const row = byMonth.get(month);
+      return {
+        month,
+        revenue: Math.round((row?.revenue ?? 0) * 100) / 100,
+        orders: row?.orders ?? 0,
+        cancelled: row?.cancelled ?? 0,
+      };
+    });
   }
 
   async topProducts(limit: number) {

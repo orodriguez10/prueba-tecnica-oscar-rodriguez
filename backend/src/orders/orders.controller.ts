@@ -26,6 +26,17 @@ export class OrdersController {
     return this.ordersService.findAll(query);
   }
 
+  // 'summary' y 'sales-by-month' también deben ir antes de ':id'.
+  @Get('summary')
+  summary() {
+    return this.ordersService.summary();
+  }
+
+  @Get('sales-by-month')
+  salesByMonth(@Query('months', new DefaultValuePipe(6), ParseIntPipe) months: number) {
+    return this.ordersService.salesByMonth(Math.min(Math.max(months, 1), 24));
+  }
+
   // Debe ir antes de ':id'; si no, "top-products" se interpretaría como un id.
   @Get('top-products')
   topProducts(@Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number) {
