@@ -1,6 +1,7 @@
 import { memo } from 'react';
+import QuantityControl from './QuantityControl';
 
-function ProductCard({ product, onAdd, style }) {
+function ProductCard({ product, quantity, onAdd, onDecrease, style }) {
   return (
     <div className="card" style={style}>
       <h3>{product.name}</h3>
@@ -8,10 +9,19 @@ function ProductCard({ product, onAdd, style }) {
       <p>{product.description}</p>
       <div className="card-footer">
         <strong>${product.price}</strong>
-        <small>Stock: {product.stock}</small>
-        <button onClick={() => onAdd(product)} disabled={product.stock === 0}>
-          Agregar
-        </button>
+        <small>Stock: {product.stock - quantity}</small>
+        {quantity > 0 ? (
+          <QuantityControl
+            quantity={quantity}
+            max={product.stock}
+            onDecrease={() => onDecrease(product._id, -1)}
+            onIncrease={() => onAdd(product)}
+          />
+        ) : (
+          <button onClick={() => onAdd(product)} disabled={product.stock === 0}>
+            Agregar
+          </button>
+        )}
       </div>
     </div>
   );

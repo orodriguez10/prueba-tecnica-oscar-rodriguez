@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { get } from '../api';
 import { useCart } from '../context/CartContext';
 import ProductCard from './ProductCard';
@@ -11,7 +11,12 @@ const CARD_STYLE_LOW = { borderColor: 'orange' };
 const CARD_STYLE_OK = { borderColor: '#ddd' };
 
 export default function ProductList() {
-  const { addToCart } = useCart();
+  const { cart, addToCart, changeQuantity } = useCart();
+  // Unidades de cada producto en el carrito, para mostrarlas en su tarjeta.
+  const quantities = useMemo(
+    () => Object.fromEntries(cart.map((item) => [item._id, item.quantity])),
+    [cart]
+  );
   const [products, setProducts] = useState([]);
   const [total, setTotal] = useState(0);
   const [categories, setCategories] = useState([]);
@@ -112,7 +117,9 @@ export default function ProductList() {
           <ProductCard
             key={product._id}
             product={product}
+            quantity={quantities[product._id] || 0}
             onAdd={addToCart}
+            onDecrease={changeQuantity}
             style={product.stock < 5 ? CARD_STYLE_LOW : CARD_STYLE_OK}
           />
         ))}
