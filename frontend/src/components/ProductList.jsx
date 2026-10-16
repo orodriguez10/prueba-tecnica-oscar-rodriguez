@@ -2,9 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { get } from '../api';
 import { useCart } from '../context/CartContext';
 import ProductCard from './ProductCard';
-
-// Opciones del selector; la API acepta como máximo 100 por página.
-const PAGE_SIZES = [20, 50, 100];
+import Pagination from './Pagination';
 
 // Objetos fijos: si se crearan en cada render, ProductCard (memo) se re-renderizaría siempre.
 const CARD_STYLE_LOW = { borderColor: 'orange' };
@@ -21,15 +19,13 @@ export default function ProductList() {
   const [total, setTotal] = useState(0);
   const [categories, setCategories] = useState([]);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(PAGE_SIZES[0]);
+  const [pageSize, setPageSize] = useState(20);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [category, setCategory] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   // Las categorías vienen del servidor, no de los productos de la página actual.
   useEffect(() => {
@@ -76,7 +72,7 @@ export default function ProductList() {
   };
 
   const changePageSize = (value) => {
-    setPageSize(Number(value));
+    setPageSize(value);
     setPage(1);
   };
 
@@ -128,24 +124,14 @@ export default function ProductList() {
         ))}
       </div>
 
-      <div className="pagination">
-        <button onClick={() => setPage((p) => p - 1)} disabled={page <= 1 || loading}>
-          Anterior
-        </button>
-        <span>
-          Página {page} de {totalPages}
-        </span>
-        <button onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages || loading}>
-          Siguiente
-        </button>
-        <select value={pageSize} onChange={(e) => changePageSize(e.target.value)}>
-          {PAGE_SIZES.map((size) => (
-            <option key={size} value={size}>
-              {size} por página
-            </option>
-          ))}
-        </select>
-      </div>
+      <Pagination
+        page={page}
+        total={total}
+        pageSize={pageSize}
+        loading={loading}
+        onPageChange={setPage}
+        onPageSizeChange={changePageSize}
+      />
     </div>
   );
 }
