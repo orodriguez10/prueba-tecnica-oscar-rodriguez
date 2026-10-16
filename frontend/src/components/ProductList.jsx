@@ -111,6 +111,9 @@ export default function ProductList() {
 
       {error && <p className="error">Error cargando productos: {error}</p>}
       <p className="muted">{total} productos</p>
+      {!loading && !error && products.length === 0 && (
+        <p className="muted">No hay productos que coincidan con la búsqueda</p>
+      )}
 
       <div className="grid">
         {products.map((product) => (
