@@ -9,6 +9,7 @@ export function CartProvider({ children }) {
     setCart((prev) => {
       const existing = prev.find((item) => item._id === product._id);
       if (existing) {
+        if (existing.quantity >= product.stock) return prev;
         return prev.map((item) =>
           item._id === product._id ? { ...item, quantity: item.quantity + 1 } : item
         );
@@ -21,12 +22,25 @@ export function CartProvider({ children }) {
     setCart((prev) => prev.filter((item) => item._id !== productId));
   }, []);
 
+  // Suma o resta unidades; no pasa del stock y el producto se quita al llegar a 0.
+  const changeQuantity = useCallback((productId, delta) => {
+    setCart((prev) =>
+      prev
+        .map((item) =>
+          item._id === productId
+            ? { ...item, quantity: Math.min(item.quantity + delta, item.stock) }
+            : item
+        )
+        .filter((item) => item.quantity > 0)
+    );
+  }, []);
+
   const clearCart = useCallback(() => setCart([]), []);
 
   // Mismo objeto mientras no cambie el carrito, para no re-renderizar a todos los consumidores.
   const value = useMemo(
-    () => ({ cart, addToCart, removeFromCart, clearCart }),
-    [cart, addToCart, removeFromCart, clearCart]
+    () => ({ cart, addToCart, removeFromCart, changeQuantity, clearCart }),
+    [cart, addToCart, removeFromCart, changeQuantity, clearCart]
   );
 
   return (

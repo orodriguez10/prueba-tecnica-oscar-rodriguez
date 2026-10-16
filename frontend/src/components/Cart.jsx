@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { get, post } from '../api';
 import { useCart } from '../context/CartContext';
+import QuantityControl from './QuantityControl';
 
 export default function Cart() {
-  const { cart, removeFromCart, clearCart } = useCart();
+  const { cart, removeFromCart, changeQuantity, clearCart } = useCart();
   const [customers, setCustomers] = useState([]);
   const [customerId, setCustomerId] = useState('');
 
@@ -49,7 +50,12 @@ export default function Cart() {
         {cart.map((item) => (
           <li key={item._id}>
             <span>{item.name}</span>
-            <input type="number" min="1" defaultValue={item.quantity} />
+            <QuantityControl
+              quantity={item.quantity}
+              max={item.stock}
+              onDecrease={() => changeQuantity(item._id, -1)}
+              onIncrease={() => changeQuantity(item._id, 1)}
+            />
             <span>${item.price * item.quantity}</span>
             <button onClick={() => removeFromCart(item._id)}>✕</button>
           </li>
