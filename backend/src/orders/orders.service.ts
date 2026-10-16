@@ -1,10 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { Order } from './order.schema';
 import { Product } from '../products/product.schema';
 import { Customer } from '../customers/customer.schema';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { buildSearchRegex } from '../common/search-regex';
+import { ListOrdersDto } from './dto/list-orders.dto';
 
 @Injectable()
 export class OrdersService {
@@ -14,19 +16,39 @@ export class OrdersService {
     @InjectModel(Customer.name) private customerModel: Model<Customer>,
   ) {}
 
-  async findAll(status?: string) {
-    const filter: any = {};
+  async findAll({ page, limit, status, customer, from, to }: ListOrdersDto) {
+    const filter: FilterQuery<Order> = {};
     if (status) {
       filter.status = status;
     }
+    if (from || to) {
+      filter.createdAt = {};
+      if (from) filter.createdAt.$gte = new Date(`${from}T00:00:00`);
+      if (to) filter.createdAt.$lte = new Date(`${to}T23:59:59.999`);
+    }
+    if (customer) {
+      const regex = buildSearchRegex(customer);
+      const matches = await this.customerModel
+        .find({ name: regex }, { _id: 1 })
+        .lean();
+      filter.customerId = { $in: matches.map((c) => c._id) };
+    }
 
-    const orders = await this.orderModel.find(filter).sort({ createdAt: -1 }).lean();
+    const [orders, total] = await Promise.all([
+      this.orderModel
+        .find(filter)
+        .sort({ createdAt: -1, _id: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      this.orderModel.countDocuments(filter),
+    ]);
 
-    // Una sola consulta para todos los clientes y otra para todos los productos.
     const customerIds = [...new Set(orders.map((o) => o.customerId.toString()))];
     const productIds = [
       ...new Set(orders.flatMap((o) => o.items.map((i) => i.productId.toString()))),
     ];
+
     const [customers, products] = await Promise.all([
       this.customerModel.find({ _id: { $in: customerIds } }).lean(),
       this.productModel.find({ _id: { $in: productIds } }).lean(),
@@ -34,7 +56,7 @@ export class OrdersService {
     const customerById = new Map(customers.map((c) => [c._id.toString(), c]));
     const productById = new Map(products.map((p) => [p._id.toString(), p]));
 
-    return orders.map((order) => ({
+    const data = orders.map((order) => ({
       ...order,
       customer: customerById.get(order.customerId.toString()),
       items: order.items.map((item) => ({
@@ -42,6 +64,8 @@ export class OrdersService {
         product: productById.get(item.productId.toString()),
       })),
     }));
+
+    return { data, total, page, limit };
   }
 
   async findOne(id: string) {

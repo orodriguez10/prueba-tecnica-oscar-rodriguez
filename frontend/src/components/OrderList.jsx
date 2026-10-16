@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { get, patch } from '../api';
 import { formatMoney } from '../format';
+import Pagination from './Pagination';
 
 const STATUS_LABELS = {
   pending: 'Pendiente',
@@ -11,25 +12,44 @@ const STATUS_LABELS = {
 
 export default function OrderList() {
   const [orders, setOrders] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    let cancelled = false;
+    const params = new URLSearchParams({ page, limit: pageSize });
+    if (status) params.set('status', status);
+
     const load = () => {
-      get(`/orders?status=${status}`)
-        .then((data) => {
-          setOrders(data);
+      get(`/orders?${params}`)
+        .then((res) => {
+          if (cancelled) return;
+          setOrders(res.data);
+          setTotal(res.total);
           setError(null);
         })
-        .catch((err) => setError(err.message))
-        .finally(() => setLoading(false));
+        .catch((err) => !cancelled && setError(err.message))
+        .finally(() => !cancelled && setLoading(false));
     };
+
     setLoading(true);
     load();
     const id = setInterval(load, 5000);
-    return () => clearInterval(id);
-  }, [status]);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [page, pageSize, status]);
+
+  // Cada filtro vuelve a la primera página.
+  const withReset = (setter) => (value) => {
+    setter(value);
+    setPage(1);
+  };
 
   const changeStatus = async (orderId, newStatus) => {
     try {
@@ -45,7 +65,7 @@ export default function OrderList() {
   return (
     <div>
       <div className="toolbar">
-        <select value={status} onChange={(e) => setStatus(e.target.value)}>
+        <select value={status} onChange={(e) => withReset(setStatus)(e.target.value)}>
           <option value="">Todos</option>
           <option value="pending">Pendientes</option>
           <option value="paid">Pagados</option>
@@ -56,7 +76,7 @@ export default function OrderList() {
       </div>
 
       {error && <p className="error">Error cargando pedidos: {error}</p>}
-      <p className="muted">{orders.length} pedidos</p>
+      <p className="muted">{total} pedidos</p>
       {!loading && !error && orders.length === 0 && (
         <p className="muted">No hay pedidos con este filtro</p>
       )}
@@ -95,6 +115,15 @@ export default function OrderList() {
           ))}
         </tbody>
       </table>
+
+      <Pagination
+        page={page}
+        total={total}
+        pageSize={pageSize}
+        loading={loading}
+        onPageChange={setPage}
+        onPageSizeChange={withReset(setPageSize)}
+      />
     </div>
   );
 }
