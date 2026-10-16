@@ -1,5 +1,8 @@
 import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+
+// Máximo de registros por página: evita que alguien pida miles de productos de una vez.
+export const MAX_PAGE_SIZE = 100;
 
 export class ListProductsDto {
   @IsOptional()
@@ -12,6 +15,7 @@ export class ListProductsDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(MAX_PAGE_SIZE)
   limit: number = 20;
 
   @IsOptional()
