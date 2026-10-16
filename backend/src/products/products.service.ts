@@ -41,19 +41,13 @@ export class ProductsService {
   }
 
   async count() {
-    const products = await this.productModel.find();
-    return { total: products.length };
+    return { total: await this.productModel.estimatedDocumentCount() };
   }
 
   async categories() {
-    const products = await this.productModel.find();
-    const categories = [];
-    for (const p of products) {
-      if (!categories.includes(p.category)) {
-        categories.push(p.category);
-      }
-    }
-    return categories;
+    // distinct lo calcula MongoDB; antes se leían todos los productos y se filtraban en memoria.
+    const categories = await this.productModel.distinct('category');
+    return categories.filter(Boolean).sort();
   }
 
   async findOne(id: string) {
