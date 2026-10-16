@@ -1,0 +1,40 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, sans-serif; background: #f5f6f8; color: #222; }
+
+.header { display: flex; align-items: center; gap: 24px; padding: 12px 24px; background: #1f2937; color: #fff; }
+.header h1 { font-size: 20px; margin: 0; }
+.header nav button { background: transparent; color: #cbd5e1; border: 0; padding: 8px 12px; cursor: pointer; font-size: 15px; }
+.header nav button.active { color: #fff; border-bottom: 2px solid #60a5fa; }
+.clock { margin-left: auto; font-variant-numeric: tabular-nums; color: #cbd5e1; }
+
+.layout { display: grid; grid-template-columns: 1fr 320px; gap: 24px; padding: 24px; }
+.content { min-width: 0; }
+
+.toolbar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+.toolbar input, .toolbar select, .cart select { padding: 8px; border: 1px solid #ccc; border-radius: 6px; }
+.toolbar input { flex: 1; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.card { background: #fff; border: 2px solid #ddd; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+.card h3 { font-size: 15px; margin: 0; }
+.card p { font-size: 13px; color: #555; margin: 0; flex: 1; }
+.card-footer { display: flex; align-items: center; gap: 8px; }
+.card-footer small { color: #777; flex: 1; }
+.badge { align-self: flex-start; font-size: 11px; background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 999px; }
+
+button { cursor: pointer; border: 1px solid #ccc; background: #fff; border-radius: 6px; padding: 6px 10px; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+button.primary { background: #2563eb; color: #fff; border-color: #2563eb; width: 100%; padding: 10px; }
+
+.cart { position: sticky; top: 24px; background: #fff; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.cart h2 { margin: 0; font-size: 18px; }
+.cart ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.cart li { display: grid; grid-template-columns: 1fr 56px 70px 28px; gap: 6px; align-items: center; font-size: 13px; }
+.cart li input { width: 56px; padding: 4px; }
+.total { font-weight: bold; font-size: 16px; }
+
+.table { width: 100%; border-collapse: collapse; background: #fff; font-size: 13px; }
+.table th, .table td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; }
+
+.muted { color: #888; font-size: 13px; }
+.error { color: #b91c1c; }
