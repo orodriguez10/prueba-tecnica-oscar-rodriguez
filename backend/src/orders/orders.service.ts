@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Order } from './order.schema';
@@ -44,29 +44,44 @@ export class OrdersService {
   }
 
   async create(dto: CreateOrderDto) {
+    const reserved: { productId: string; quantity: number }[] = [];
     let total = 0;
 
-    for (const item of dto.items) {
-      const product = await this.productModel.findById(item.productId);
+    try {
+      for (const item of dto.items) {
+        // Descuenta el stock solo si alcanza, en una única operación atómica.
+        const product = await this.productModel.findOneAndUpdate(
+          { _id: item.productId, stock: { $gte: item.quantity } },
+          { $inc: { stock: -item.quantity } },
+        );
 
-      if (product.stock < item.quantity) {
-        throw new BadRequestException(`No hay stock suficiente de ${product.name}`);
+        if (!product) {
+          const existing = await this.productModel.findById(item.productId, 'name');
+          if (!existing) {
+            throw new NotFoundException('El producto no existe');
+          }
+          throw new BadRequestException(`No hay stock suficiente de ${existing.name}`);
+        }
+
+        reserved.push({ productId: item.productId, quantity: item.quantity });
+        total += item.unitPrice * item.quantity;
       }
 
-      product.stock = product.stock - item.quantity;
-      await product.save();
-
-      total += item.unitPrice * item.quantity;
+      return await this.orderModel.create({
+        customerId: dto.customerId,
+        items: dto.items,
+        total: total,
+        status: 'pending',
+      });
+    } catch (error) {
+      // Si el pedido falla, se devuelve el stock de los productos ya descontados.
+      await Promise.all(
+        reserved.map((r) =>
+          this.productModel.updateOne({ _id: r.productId }, { $inc: { stock: r.quantity } }),
+        ),
+      );
+      throw error;
     }
-
-    const order = await this.orderModel.create({
-      customerId: dto.customerId,
-      items: dto.items,
-      total: total,
-      status: 'pending',
-    });
-
-    return order;
   }
 
   async updateStatus(id: string, status: string) {
