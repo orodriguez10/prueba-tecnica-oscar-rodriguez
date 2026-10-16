@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { get, patch } from '../api';
-import { formatDate, formatMoney } from '../format';
+import { formatDate, formatMoney, toCents } from '../format';
 import Pagination from './Pagination';
 
 const STATUS_LABELS = {
@@ -22,6 +22,7 @@ export default function OrderList() {
   const [debouncedCustomer, setDebouncedCustomer] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [expandedId, setExpandedId] = useState(null);
 
   // Espera a que el usuario deje de escribir antes de consultar.
   useEffect(() => {
@@ -86,6 +87,8 @@ export default function OrderList() {
     }
   };
 
+  const toggleExpanded = (orderId) => setExpandedId((current) => (current === orderId ? null : orderId));
+
   const hasFilters = status || from || to || customer;
 
   return (
@@ -133,27 +136,68 @@ export default function OrderList() {
           </tr>
         </thead>
         <tbody>
-          {orders.map((order) => (
-            <tr key={order._id}>
-              <td className="nowrap">{formatDate(order.createdAt)}</td>
-              <td className="nowrap">{order.customer?.name}</td>
-              <td>{order.items.map((i) => i.product?.name).join(', ')}</td>
-              <td>
-                <select
-                  className={`status status-${order.status}`}
-                  value={order.status}
-                  onChange={(e) => changeStatus(order._id, e.target.value)}
-                >
-                  {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </td>
-              <td>{formatMoney(order.total)}</td>
-            </tr>
-          ))}
+          {orders.map((order) => {
+            const isOpen = expandedId === order._id;
+            const [first, ...rest] = order.items;
+            return (
+              <Fragment key={order._id}>
+                <tr>
+                  <td className="nowrap">{formatDate(order.createdAt)}</td>
+                  <td className="nowrap">{order.customer?.name}</td>
+                  <td>
+                    <button
+                      className="link-btn"
+                      onClick={() => toggleExpanded(order._id)}
+                      aria-expanded={isOpen}
+                    >
+                      {isOpen ? '▾' : '▸'} {first?.product?.name ?? 'Producto eliminado'}
+                      {rest.length > 0 && <span className="more"> +{rest.length} más</span>}
+                    </button>
+                  </td>
+                  <td>
+                    <select
+                      className={`status status-${order.status}`}
+                      value={order.status}
+                      onChange={(e) => changeStatus(order._id, e.target.value)}
+                    >
+                      {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                        <option key={value} value={value}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td>{formatMoney(order.total)}</td>
+                </tr>
+                {isOpen && (
+                  <tr className="detail-row">
+                    <td colSpan={5}>
+                      <table className="detail-table">
+                        <thead>
+                          <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Precio unitario</th>
+                            <th>Subtotal</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {order.items.map((item) => (
+                            <tr key={item.productId}>
+                              <td>{item.product?.name ?? 'Producto eliminado'}</td>
+                              <td>× {item.quantity}</td>
+                              <td>{formatMoney(item.unitPrice)}</td>
+                              <td>{formatMoney((toCents(item.unitPrice) * item.quantity) / 100)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
+            );
+          })}
         </tbody>
       </table>
 
