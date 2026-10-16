@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { get, post } from '../api';
 import { useCart } from '../context/CartContext';
+import { formatMoney, toCents } from '../format';
 import QuantityControl from './QuantityControl';
 
 export default function Cart() {
@@ -16,7 +17,7 @@ export default function Cart() {
       .catch((err) => setMessage({ type: 'error', text: `No se pudieron cargar los clientes: ${err.message}` }));
   }, []);
 
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const totalCents = cart.reduce((sum, item) => sum + toCents(item.price) * item.quantity, 0);
 
   const checkout = async () => {
     if (!customerId) {
@@ -34,7 +35,7 @@ export default function Cart() {
           unitPrice: item.price,
         })),
       });
-      setMessage({ type: 'ok', text: `Pedido creado. Total: $${order.total}` });
+      setMessage({ type: 'ok', text: `Pedido creado. Total: ${formatMoney(order.total)}` });
       clearCart();
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
@@ -68,13 +69,13 @@ export default function Cart() {
               onDecrease={() => changeQuantity(item._id, -1)}
               onIncrease={() => changeQuantity(item._id, 1)}
             />
-            <span>${item.price * item.quantity}</span>
+            <span>{formatMoney((toCents(item.price) * item.quantity) / 100)}</span>
             <button onClick={() => removeFromCart(item._id)}>✕</button>
           </li>
         ))}
       </ul>
 
-      <p className="total">Total: ${total}</p>
+      <p className="total">Total: {formatMoney(totalCents / 100)}</p>
       {message && <p className={message.type === 'ok' ? 'success' : 'error'}>{message.text}</p>}
       <button className="primary" onClick={checkout} disabled={cart.length === 0 || submitting}>
         {submitting ? 'Procesando...' : 'Finalizar compra'}

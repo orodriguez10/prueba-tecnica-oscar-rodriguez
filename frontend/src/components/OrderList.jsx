@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { get, patch } from '../api';
+import { formatMoney } from '../format';
 
 const STATUS_LABELS = {
   pending: 'Pendiente',
@@ -89,7 +90,7 @@ export default function OrderList() {
                   ))}
                 </select>
               </td>
-              <td>${order.total}</td>
+              <td>{formatMoney(order.total)}</td>
             </tr>
           ))}
         </tbody>

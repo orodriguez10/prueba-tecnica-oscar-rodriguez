@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import QuantityControl from './QuantityControl';
+import { formatMoney } from '../format';
 
 function ProductCard({ product, quantity, onAdd, onDecrease, style }) {
   return (
@@ -8,7 +9,7 @@ function ProductCard({ product, quantity, onAdd, onDecrease, style }) {
       <span className="badge">{product.category}</span>
       <p>{product.description}</p>
       <div className="card-footer">
-        <strong>${product.price}</strong>
+        <strong>{formatMoney(product.price)}</strong>
         <small>Stock: {product.stock - quantity}</small>
         {quantity > 0 ? (
           <QuantityControl
