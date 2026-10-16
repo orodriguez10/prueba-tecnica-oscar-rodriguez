@@ -7,28 +7,40 @@ export default function Cart() {
   const { cart, removeFromCart, changeQuantity, clearCart } = useCart();
   const [customers, setCustomers] = useState([]);
   const [customerId, setCustomerId] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState(null); // { type: 'ok' | 'error', text }
 
   useEffect(() => {
-    get('/customers').then(setCustomers);
+    get('/customers')
+      .then(setCustomers)
+      .catch((err) => setMessage({ type: 'error', text: `No se pudieron cargar los clientes: ${err.message}` }));
   }, []);
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const checkout = async () => {
     if (!customerId) {
-      alert('Selecciona un cliente');
+      setMessage({ type: 'error', text: 'Selecciona un cliente' });
       return;
     }
-    const order = await post('/orders', {
-      customerId,
-      items: cart.map((item) => ({
-        productId: item._id,
-        quantity: item.quantity,
-        unitPrice: item.price,
-      })),
-    });
-    alert(`Pedido creado ✔ Total: $${order.total}`);
-    clearCart();
+    setSubmitting(true);
+    setMessage(null);
+    try {
+      const order = await post('/orders', {
+        customerId,
+        items: cart.map((item) => ({
+          productId: item._id,
+          quantity: item.quantity,
+          unitPrice: item.price,
+        })),
+      });
+      setMessage({ type: 'ok', text: `Pedido creado. Total: $${order.total}` });
+      clearCart();
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -63,8 +75,9 @@ export default function Cart() {
       </ul>
 
       <p className="total">Total: ${total}</p>
-      <button className="primary" onClick={checkout} disabled={cart.length === 0}>
-        Finalizar compra
+      {message && <p className={message.type === 'ok' ? 'success' : 'error'}>{message.text}</p>}
+      <button className="primary" onClick={checkout} disabled={cart.length === 0 || submitting}>
+        {submitting ? 'Procesando...' : 'Finalizar compra'}
       </button>
     </div>
   );
