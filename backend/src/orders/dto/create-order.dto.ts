@@ -8,9 +8,6 @@ export class CreateOrderItemDto {
   @IsNumber()
   @Min(1)
   quantity: number;
-
-  @IsNumber()
-  unitPrice: number;
 }
 
 export class CreateOrderDto {

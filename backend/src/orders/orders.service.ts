@@ -52,6 +52,7 @@ export class OrdersService {
 
   async create(dto: CreateOrderDto) {
     const reserved: { productId: string; quantity: number }[] = [];
+    const items = [];
     let total = 0;
 
     try {
@@ -71,12 +72,14 @@ export class OrdersService {
         }
 
         reserved.push({ productId: item.productId, quantity: item.quantity });
-        total += item.unitPrice * item.quantity;
+        // El precio sale de la base de datos, no del que envíe el cliente.
+        items.push({ productId: product._id, quantity: item.quantity, unitPrice: product.price });
+        total += product.price * item.quantity;
       }
 
       return await this.orderModel.create({
         customerId: dto.customerId,
-        items: dto.items,
+        items,
         total: total,
         status: 'pending',
       });
