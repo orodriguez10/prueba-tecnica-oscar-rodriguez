@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { get, patch } from '../api';
-import { formatMoney } from '../format';
+import { formatDate, formatMoney } from '../format';
 import Pagination from './Pagination';
 
 const STATUS_LABELS = {
@@ -135,8 +135,8 @@ export default function OrderList() {
         <tbody>
           {orders.map((order) => (
             <tr key={order._id}>
-              <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-              <td>{order.customer?.name}</td>
+              <td className="nowrap">{formatDate(order.createdAt)}</td>
+              <td className="nowrap">{order.customer?.name}</td>
               <td>{order.items.map((i) => i.product?.name).join(', ')}</td>
               <td>
                 <select

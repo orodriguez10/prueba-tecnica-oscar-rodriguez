@@ -9,3 +9,7 @@ const money = new Intl.NumberFormat('en-US', {
 export const toCents = (amount) => Math.round(amount * 100);
 
 export const formatMoney = (amount) => money.format(amount);
+
+// Ejemplo: 2026-10-01 -> "1 de octubre de 2026"
+export const formatDate = (value) =>
+  new Date(value).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' });

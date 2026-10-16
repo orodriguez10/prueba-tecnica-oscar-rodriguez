@@ -52,3 +52,4 @@ button.primary { background: #2563eb; color: #fff; border-color: #2563eb; width:
 .status-cancelled { background: #fee2e2; color: #991b1b; }
 .date-field { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #666; }
 .date-field input { padding: 6px; border: 1px solid #ccc; border-radius: 6px; }
+.nowrap { white-space: nowrap; }
