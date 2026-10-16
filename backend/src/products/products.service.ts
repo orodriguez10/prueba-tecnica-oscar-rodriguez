@@ -4,6 +4,7 @@ import { FilterQuery, Model } from 'mongoose';
 import { Product } from './product.schema';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ListProductsDto } from './dto/list-products.dto';
+import { buildSearchRegex } from '../common/search-regex';
 
 @Injectable()
 export class ProductsService {
@@ -12,8 +13,8 @@ export class ProductsService {
   async findAll({ page, limit, search, category, sort }: ListProductsDto) {
     const filter: FilterQuery<Product> = {};
     if (search) {
-      // Se escapan los caracteres especiales para buscar el texto tal cual lo escribió el usuario.
-      filter.name = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      // Ignora mayúsculas y tildes, y trata los símbolos como texto normal.
+      filter.name = buildSearchRegex(search);
     }
     if (category) {
       filter.category = category;
