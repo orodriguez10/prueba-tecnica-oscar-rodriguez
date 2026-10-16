@@ -46,7 +46,7 @@ export class OrdersService {
   async create(dto: CreateOrderDto) {
     let total = 0;
 
-    dto.items.forEach(async (item) => {
+    for (const item of dto.items) {
       const product = await this.productModel.findById(item.productId);
 
       if (product.stock < item.quantity) {
@@ -57,7 +57,7 @@ export class OrdersService {
       await product.save();
 
       total += item.unitPrice * item.quantity;
-    });
+    }
 
     const order = await this.orderModel.create({
       customerId: dto.customerId,
