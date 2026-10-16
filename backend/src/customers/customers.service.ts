@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Customer } from './customer.schema';
@@ -16,6 +16,8 @@ export class CustomersService {
   }
 
   async findOne(id: string) {
-    return this.customerModel.findById(id);
+    const customer = await this.customerModel.findById(id);
+    if (!customer) throw new NotFoundException('Cliente no encontrado');
+    return customer;
   }
 }

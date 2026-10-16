@@ -45,7 +45,9 @@ export class OrdersService {
   }
 
   async findOne(id: string) {
-    return this.orderModel.findById(id);
+    const order = await this.orderModel.findById(id);
+    if (!order) throw new NotFoundException('Pedido no encontrado');
+    return order;
   }
 
   async create(dto: CreateOrderDto) {
@@ -91,6 +93,7 @@ export class OrdersService {
 
   async updateStatus(id: string, status: string) {
     const order = await this.orderModel.findById(id);
+    if (!order) throw new NotFoundException('Pedido no encontrado');
     order.status = status;
     await order.save();
     return order;

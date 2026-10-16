@@ -13,6 +13,7 @@ import {
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
+import { ParseObjectIdPipe } from '../common/parse-object-id.pipe';
 
 @ApiTags('Pedidos')
 @Controller('orders')
@@ -31,7 +32,7 @@ export class OrdersController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseObjectIdPipe) id: string) {
     return this.ordersService.findOne(id);
   }
 
@@ -41,7 +42,7 @@ export class OrdersController {
   }
 
   @Patch(':id/status')
-  updateStatus(@Param('id') id: string, @Body() dto: UpdateStatusDto) {
+  updateStatus(@Param('id', ParseObjectIdPipe) id: string, @Body() dto: UpdateStatusDto) {
     return this.ordersService.updateStatus(id, dto.status);
   }
 }
