@@ -7,6 +7,7 @@ const LIMIT = 10;
 export default function Stats() {
   const [top, setTop] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     get(`/orders/top-products?limit=${LIMIT}`)
@@ -17,14 +18,17 @@ export default function Stats() {
           setTop(data);
         }
       })
-      .catch((err) => setError(err.message));
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
   }, []);
 
+  if (loading) return <p className="muted">Cargando estadísticas...</p>;
   if (error) return <p className="error">Error cargando estadísticas: {error}</p>;
 
   return (
     <div>
       <h2>Top {LIMIT} productos más vendidos</h2>
+      {top.length === 0 && <p className="muted">Todavía no hay ventas registradas</p>}
       <ol>
         {top.map((p) => (
           <li key={p.name}>
