@@ -6,19 +6,12 @@ export default function Cart() {
   const { cart, removeFromCart, clearCart } = useCart();
   const [customers, setCustomers] = useState([]);
   const [customerId, setCustomerId] = useState('');
-  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     get('/customers').then(setCustomers);
   }, []);
 
-  useEffect(() => {
-    let sum = 0;
-    cart.forEach((item) => {
-      sum += item.price * item.quantity;
-    });
-    setTotal(sum);
-  }, [cart]);
+  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const checkout = async () => {
     if (!customerId) {
@@ -53,8 +46,8 @@ export default function Cart() {
       {cart.length === 0 && <p className="muted">El carrito está vacío</p>}
 
       <ul>
-        {cart.map((item, index) => (
-          <li key={index}>
+        {cart.map((item) => (
+          <li key={item._id}>
             <span>{item.name}</span>
             <input type="number" min="1" defaultValue={item.quantity} />
             <span>${item.price * item.quantity}</span>
