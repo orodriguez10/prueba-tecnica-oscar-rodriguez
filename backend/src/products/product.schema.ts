@@ -22,3 +22,11 @@ export class Product {
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);
+
+// Índices para los filtros y órdenes de GET /products. Cada orden termina en _id (el desempate
+// de la paginación), por eso el índice debe incluirlo para que MongoDB pueda usarlo.
+ProductSchema.index({ createdAt: -1, _id: -1 });
+ProductSchema.index({ name: 1, _id: 1 });
+ProductSchema.index({ price: 1, _id: 1 });
+ProductSchema.index({ price: -1, _id: 1 });
+ProductSchema.index({ category: 1, createdAt: -1, _id: -1 });
