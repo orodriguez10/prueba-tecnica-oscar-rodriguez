@@ -5,7 +5,7 @@ function ProductCard({ product, onAdd, style }) {
     <div className="card" style={style}>
       <h3>{product.name}</h3>
       <span className="badge">{product.category}</span>
-      <p dangerouslySetInnerHTML={{ __html: product.description }} />
+      <p>{product.description}</p>
       <div className="card-footer">
         <strong>${product.price}</strong>
         <small>Stock: {product.stock}</small>
