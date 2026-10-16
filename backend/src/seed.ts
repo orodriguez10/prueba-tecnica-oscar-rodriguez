@@ -1,9 +1,10 @@
+import 'dotenv/config';
 import mongoose from 'mongoose';
 import { ProductSchema } from './products/product.schema';
 import { CustomerSchema } from './customers/customer.schema';
 import { OrderSchema } from './orders/order.schema';
 
-const MONGO_URI = 'mongodb://localhost:27017/tienda';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/tienda';
 
 const CATEGORIES = ['Ropa', 'Calzado', 'Electrónica', 'Hogar', 'Deportes', 'Juguetes', 'Libros', 'Belleza'];
 const ADJECTIVES = ['Clásico', 'Premium', 'Básico', 'Deluxe', 'Eco', 'Pro', 'Mini', 'Max', 'Urbano', 'Vintage'];

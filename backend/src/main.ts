@@ -6,7 +6,7 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-  app.enableCors();
+  app.enableCors({ origin: process.env.CORS_ORIGIN || 'http://localhost:5173' });
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Tienda API')
@@ -15,8 +15,9 @@ async function bootstrap() {
     .build();
   SwaggerModule.setup('api/docs', app, SwaggerModule.createDocument(app, swaggerConfig));
 
-  await app.listen(3000);
-  console.log('API escuchando en http://localhost:3000');
-  console.log('Documentación en http://localhost:3000/api/docs');
+  const port = Number(process.env.PORT) || 3000;
+  await app.listen(port);
+  console.log(`API escuchando en http://localhost:${port}`);
+  console.log(`Documentación en http://localhost:${port}/api/docs`);
 }
 bootstrap();
