@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  DefaultValuePipe,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
@@ -12,14 +22,15 @@ export class OrdersController {
     return this.ordersService.findAll(status);
   }
 
+  // Debe ir antes de ':id'; si no, "top-products" se interpretaría como un id.
+  @Get('top-products')
+  topProducts(@Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number) {
+    return this.ordersService.topProducts(limit);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.ordersService.findOne(id);
-  }
-
-  @Get('top-products')
-  topProducts(@Query('limit') limit = 10) {
-    return this.ordersService.topProducts(limit);
   }
 
   @Post()
