@@ -38,3 +38,5 @@ button.primary { background: #2563eb; color: #fff; border-color: #2563eb; width:
 
 .muted { color: #888; font-size: 13px; }
 .error { color: #b91c1c; }
+
+.pagination { display: flex; justify-content: center; align-items: center; gap: 12px; margin: 16px 0; }
