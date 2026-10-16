@@ -1,12 +1,22 @@
 import { Type } from 'class-transformer';
-import { ArrayMinSize, IsArray, IsMongoId, IsNumber, Min, ValidateNested } from 'class-validator';
+import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
+  IsInt,
+  IsMongoId,
+  Max,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 
 export class CreateOrderItemDto {
   @IsMongoId()
   productId: string;
 
-  @IsNumber()
+  @IsInt()
   @Min(1)
+  @Max(1000)
   quantity: number;
 }
 
@@ -16,6 +26,7 @@ export class CreateOrderDto {
 
   @IsArray()
   @ArrayMinSize(1)
+  @ArrayMaxSize(50)
   @ValidateNested({ each: true })
   @Type(() => CreateOrderItemDto)
   items: CreateOrderItemDto[];

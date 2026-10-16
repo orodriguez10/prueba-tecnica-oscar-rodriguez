@@ -51,6 +51,14 @@ export class OrdersService {
   }
 
   async create(dto: CreateOrderDto) {
+    const ids = dto.items.map((i) => i.productId);
+    if (new Set(ids).size !== ids.length) {
+      throw new BadRequestException('Hay productos repetidos en el pedido');
+    }
+    if (!(await this.customerModel.exists({ _id: dto.customerId }))) {
+      throw new NotFoundException('El cliente no existe');
+    }
+
     const reserved: { productId: string; quantity: number }[] = [];
     const items = [];
     let total = 0;
