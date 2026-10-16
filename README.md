@@ -28,15 +28,26 @@ docker compose up -d
 
 # 2. Backend (http://localhost:3000)
 cd backend
+cp .env.example .env   # opcional: los valores por defecto ya funcionan en local
 npm install
 npm run seed        # carga ~5.000 productos, 300 clientes y 800 pedidos
 npm run start:dev
 
 # 3. Frontend (http://localhost:5173) — en otra terminal
 cd frontend
+cp .env.example .env   # opcional
 npm install
 npm run dev
 ```
+
+### Variables de entorno
+
+| Dónde | Variable | Por defecto | Descripción |
+|-------|----------|-------------|-------------|
+| backend/.env | `PORT` | `3000` | Puerto de la API |
+| backend/.env | `MONGO_URI` | `mongodb://localhost:27017/tienda` | Conexión a MongoDB (también la usa el seed) |
+| backend/.env | `CORS_ORIGIN` | `http://localhost:5173` | Origen del frontend permitido por CORS |
+| frontend/.env | `VITE_API_URL` | `http://localhost:3000` | URL base de la API |
 
 ### Documentación de la API
 Con el backend levantado, la documentación Swagger está en http://localhost:3000/api/docs
