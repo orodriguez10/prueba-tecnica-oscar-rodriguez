@@ -40,3 +40,4 @@ button.primary { background: #2563eb; color: #fff; border-color: #2563eb; width:
 .error { color: #b91c1c; }
 
 .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; margin: 16px 0; }
+.pagination select { padding: 6px; border: 1px solid #ccc; border-radius: 6px; }

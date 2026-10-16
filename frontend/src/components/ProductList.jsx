@@ -3,7 +3,8 @@ import { get } from '../api';
 import { useCart } from '../context/CartContext';
 import ProductCard from './ProductCard';
 
-const PAGE_SIZE = 20;
+// Opciones del selector; la API acepta como máximo 100 por página.
+const PAGE_SIZES = [20, 50, 100];
 
 // Objetos fijos: si se crearan en cada render, ProductCard (memo) se re-renderizaría siempre.
 const CARD_STYLE_LOW = { borderColor: 'orange' };
@@ -15,6 +16,7 @@ export default function ProductList() {
   const [total, setTotal] = useState(0);
   const [categories, setCategories] = useState([]);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGE_SIZES[0]);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [category, setCategory] = useState('');
@@ -22,7 +24,7 @@ export default function ProductList() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   // Las categorías vienen del servidor, no de los productos de la página actual.
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function ProductList() {
 
   useEffect(() => {
     let cancelled = false;
-    const params = new URLSearchParams({ page, limit: PAGE_SIZE, sort: sortBy });
+    const params = new URLSearchParams({ page, limit: pageSize, sort: sortBy });
     if (debouncedSearch) params.set('search', debouncedSearch);
     if (category) params.set('category', category);
 
@@ -60,11 +62,16 @@ export default function ProductList() {
     return () => {
       cancelled = true;
     };
-  }, [page, debouncedSearch, category, sortBy]);
+  }, [page, pageSize, debouncedSearch, category, sortBy]);
 
   // Cambiar un filtro vuelve a la primera página.
   const changeCategory = (value) => {
     setCategory(value);
+    setPage(1);
+  };
+
+  const changePageSize = (value) => {
+    setPageSize(Number(value));
     setPage(1);
   };
 
@@ -121,6 +128,13 @@ export default function ProductList() {
         <button onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages || loading}>
           Siguiente
         </button>
+        <select value={pageSize} onChange={(e) => changePageSize(e.target.value)}>
+          {PAGE_SIZES.map((size) => (
+            <option key={size} value={size}>
+              {size} por página
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   );
