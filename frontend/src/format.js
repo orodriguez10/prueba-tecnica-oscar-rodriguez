@@ -13,3 +13,13 @@ export const formatMoney = (amount) => money.format(amount);
 // Ejemplo: 2026-10-01 -> "1 de octubre de 2026"
 export const formatDate = (value) =>
   new Date(value).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' });
+
+const compactMoney = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
+
+// Para etiquetas con poco espacio: 129274.86 -> "$129.3K"
+export const formatCompactMoney = (amount) => compactMoney.format(amount);

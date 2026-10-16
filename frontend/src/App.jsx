@@ -26,15 +26,18 @@ export default function App() {
         <Clock />
       </header>
 
-      <main className="layout">
+      <main className={tab === 'stats' ? 'layout layout-full' : 'layout'}>
         <section className="content">
           {tab === 'products' && <ProductList />}
           {tab === 'orders' && <OrderList />}
           {tab === 'stats' && <Stats />}
         </section>
-        <aside className="sidebar">
-          <Cart />
-        </aside>
+        {/* En Estadísticas no hace falta el carrito; el estado se conserva en el contexto. */}
+        {tab !== 'stats' && (
+          <aside className="sidebar">
+            <Cart />
+          </aside>
+        )}
       </main>
     </CartProvider>
   );
