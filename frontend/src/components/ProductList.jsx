@@ -4,10 +4,6 @@ import { useCart } from '../context/CartContext';
 import ProductCard from './ProductCard';
 import Pagination from './Pagination';
 
-// Objetos fijos: si se crearan en cada render, ProductCard (memo) se re-renderizaría siempre.
-const CARD_STYLE_LOW = { borderColor: 'orange' };
-const CARD_STYLE_OK = { borderColor: '#ddd' };
-
 export default function ProductList() {
   const { cart, ordersCompleted, addToCart, changeQuantity } = useCart();
   // Unidades de cada producto en el carrito, para mostrarlas en su tarjeta.
@@ -119,7 +115,6 @@ export default function ProductList() {
             quantity={quantities[product._id] || 0}
             onAdd={addToCart}
             onDecrease={changeQuantity}
-            style={product.stock < 5 ? CARD_STYLE_LOW : CARD_STYLE_OK}
           />
         ))}
       </div>

@@ -68,15 +68,17 @@ export default function Cart() {
       <ul>
         {cart.map((item) => (
           <li key={item._id}>
-            <span>{item.name}</span>
+            <span className="cart-name">{item.name}</span>
             <QuantityControl
               quantity={item.quantity}
               max={item.stock}
               onDecrease={() => changeQuantity(item._id, -1)}
               onIncrease={() => changeQuantity(item._id, 1)}
             />
-            <span>{formatMoney((toCents(item.price) * item.quantity) / 100)}</span>
-            <button onClick={() => removeFromCart(item._id)}>✕</button>
+            <span className="cart-price">{formatMoney((toCents(item.price) * item.quantity) / 100)}</span>
+            <button className="icon-btn" onClick={() => removeFromCart(item._id)} aria-label="Quitar del carrito">
+              ✕
+            </button>
           </li>
         ))}
       </ul>

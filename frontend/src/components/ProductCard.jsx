@@ -2,15 +2,21 @@ import { memo } from 'react';
 import QuantityControl from './QuantityControl';
 import { formatMoney } from '../format';
 
-function ProductCard({ product, quantity, onAdd, onDecrease, style }) {
+function ProductCard({ product, quantity, onAdd, onDecrease }) {
+  const available = product.stock - quantity;
+
   return (
-    <div className="card" style={style}>
-      <h3>{product.name}</h3>
+    <div className="card">
       <span className="badge">{product.category}</span>
+      <h3>{product.name}</h3>
       <p>{product.description}</p>
-      <div className="card-footer">
-        <strong>{formatMoney(product.price)}</strong>
-        <small>Stock: {product.stock - quantity}</small>
+      <div className="card-info">
+        <strong className="price">{formatMoney(product.price)}</strong>
+        <small className={available < 5 ? 'low-stock' : ''}>
+          {available === 0 ? 'Sin stock' : `Stock: ${available}`}
+        </small>
+      </div>
+      <div className="card-action">
         {quantity > 0 ? (
           <QuantityControl
             quantity={quantity}
@@ -19,7 +25,7 @@ function ProductCard({ product, quantity, onAdd, onDecrease, style }) {
             onIncrease={() => onAdd(product)}
           />
         ) : (
-          <button onClick={() => onAdd(product)} disabled={product.stock === 0}>
+          <button className="add-btn" onClick={() => onAdd(product)} disabled={product.stock === 0}>
             Agregar
           </button>
         )}
