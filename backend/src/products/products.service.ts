@@ -11,7 +11,8 @@ export class ProductsService {
   async findAll(search?: string, category?: string) {
     const filter: any = {};
     if (search) {
-      filter.name = new RegExp(search, 'i');
+      // Se escapan los caracteres especiales para buscar el texto tal cual lo escribió el usuario.
+      filter.name = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
     }
 
     let products = await this.productModel.find(filter);

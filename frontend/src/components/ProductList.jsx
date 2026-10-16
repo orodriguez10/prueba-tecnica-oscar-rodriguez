@@ -21,6 +21,7 @@ export default function ProductList() {
   const [category, setCategory] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // Espera a que el usuario deje de escribir antes de consultar la API.
   useEffect(() => {
@@ -30,10 +31,11 @@ export default function ProductList() {
 
   useEffect(() => {
     setLoading(true);
-    get(`/products?search=${debouncedSearch}`).then((data) => {
-      setProducts(data);
-      setLoading(false);
-    });
+    setError(null);
+    get(`/products?search=${encodeURIComponent(debouncedSearch)}`)
+      .then((data) => setProducts(data))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
   }, [debouncedSearch]);
 
   // Solo se recalculan cuando cambian los datos o los filtros, no en cada render.
@@ -70,6 +72,7 @@ export default function ProductList() {
         {loading && <span>Cargando...</span>}
       </div>
 
+      {error && <p className="error">Error cargando productos: {error}</p>}
       <p className="muted">{sorted.length} productos</p>
 
       <div className="grid">
