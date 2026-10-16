@@ -4,6 +4,8 @@ const CartContext = createContext(null);
 
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
+  // Sube cada vez que se completa un pedido, para que las listas recarguen el stock.
+  const [ordersCompleted, setOrdersCompleted] = useState(0);
 
   const addToCart = useCallback((product) => {
     setCart((prev) => {
@@ -37,10 +39,15 @@ export function CartProvider({ children }) {
 
   const clearCart = useCallback(() => setCart([]), []);
 
+  const completeOrder = useCallback(() => {
+    setCart([]);
+    setOrdersCompleted((n) => n + 1);
+  }, []);
+
   // Mismo objeto mientras no cambie el carrito, para no re-renderizar a todos los consumidores.
   const value = useMemo(
-    () => ({ cart, addToCart, removeFromCart, changeQuantity, clearCart }),
-    [cart, addToCart, removeFromCart, changeQuantity, clearCart]
+    () => ({ cart, ordersCompleted, addToCart, removeFromCart, changeQuantity, clearCart, completeOrder }),
+    [cart, ordersCompleted, addToCart, removeFromCart, changeQuantity, clearCart, completeOrder]
   );
 
   return (

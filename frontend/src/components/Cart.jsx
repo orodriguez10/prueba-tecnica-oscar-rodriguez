@@ -5,7 +5,7 @@ import { formatMoney, toCents } from '../format';
 import QuantityControl from './QuantityControl';
 
 export default function Cart() {
-  const { cart, removeFromCart, changeQuantity, clearCart } = useCart();
+  const { cart, removeFromCart, changeQuantity, completeOrder } = useCart();
   const [customers, setCustomers] = useState([]);
   const [customerId, setCustomerId] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -16,6 +16,11 @@ export default function Cart() {
       .then(setCustomers)
       .catch((err) => setMessage({ type: 'error', text: `No se pudieron cargar los clientes: ${err.message}` }));
   }, []);
+
+  // Al empezar un nuevo pedido se oculta el aviso del anterior.
+  useEffect(() => {
+    if (cart.length > 0) setMessage(null);
+  }, [cart]);
 
   const totalCents = cart.reduce((sum, item) => sum + toCents(item.price) * item.quantity, 0);
 
@@ -36,7 +41,8 @@ export default function Cart() {
         })),
       });
       setMessage({ type: 'ok', text: `Pedido creado. Total: ${formatMoney(order.total)}` });
-      clearCart();
+      completeOrder();
+      setCustomerId('');
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
     } finally {

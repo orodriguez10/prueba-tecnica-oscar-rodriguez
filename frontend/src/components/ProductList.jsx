@@ -9,7 +9,7 @@ const CARD_STYLE_LOW = { borderColor: 'orange' };
 const CARD_STYLE_OK = { borderColor: '#ddd' };
 
 export default function ProductList() {
-  const { cart, addToCart, changeQuantity } = useCart();
+  const { cart, ordersCompleted, addToCart, changeQuantity } = useCart();
   // Unidades de cada producto en el carrito, para mostrarlas en su tarjeta.
   const quantities = useMemo(
     () => Object.fromEntries(cart.map((item) => [item._id, item.quantity])),
@@ -63,7 +63,7 @@ export default function ProductList() {
     return () => {
       cancelled = true;
     };
-  }, [page, pageSize, debouncedSearch, category, sortBy]);
+  }, [page, pageSize, debouncedSearch, category, sortBy, ordersCompleted]);
 
   // Cambiar un filtro vuelve a la primera página.
   const changeCategory = (value) => {
