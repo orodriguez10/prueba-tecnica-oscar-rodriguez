@@ -14,6 +14,7 @@ import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { ListOrdersDto } from './dto/list-orders.dto';
+import { TopProductsDto } from './dto/top-products.dto';
 import { ParseObjectIdPipe } from '../common/parse-object-id.pipe';
 
 @ApiTags('Pedidos')
@@ -39,7 +40,7 @@ export class OrdersController {
 
   // Debe ir antes de ':id'; si no, "top-products" se interpretaría como un id.
   @Get('top-products')
-  topProducts(@Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number) {
+  topProducts(@Query() { limit }: TopProductsDto) {
     return this.ordersService.topProducts(limit);
   }
 

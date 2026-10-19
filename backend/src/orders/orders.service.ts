@@ -210,27 +210,23 @@ export class OrdersService {
     });
   }
 
+  // Ranking calculado en MongoDB. Si un producto ya no existe, se muestra como "Producto eliminado".
   async topProducts(limit: number) {
-    const orders = await this.orderModel.find();
-
-    const totals = {};
-    for (const order of orders) {
-      for (const item of order.items) {
-        const key = item.productId.toString();
-        totals[key] = (totals[key] || 0) + item.quantity;
-      }
-    }
-
-    const ranking = Object.keys(totals)
-      .map((productId) => ({ productId, quantity: totals[productId] }))
-      .sort((a, b) => b.quantity - a.quantity)
-      .slice(0, limit);
-
-    const result = [];
-    for (const r of ranking) {
-      const product = await this.productModel.findById(r.productId);
-      result.push({ name: product.name, quantity: r.quantity });
-    }
-    return result;
+    return this.orderModel.aggregate([
+      { $unwind: '$items' },
+      { $group: { _id: '$items.productId', quantity: { $sum: '$items.quantity' } } },
+      // _id como desempate: sin él, productos con las mismas unidades cambiarían de lugar entre consultas.
+      { $sort: { quantity: -1, _id: 1 } },
+      { $limit: limit },
+      { $lookup: { from: 'products', localField: '_id', foreignField: '_id', as: 'product' } },
+      {
+        $project: {
+          _id: 0,
+          productId: '$_id',
+          name: { $ifNull: [{ $first: '$product.name' }, 'Producto eliminado'] },
+          quantity: 1,
+        },
+      },
+    ]);
   }
 }
