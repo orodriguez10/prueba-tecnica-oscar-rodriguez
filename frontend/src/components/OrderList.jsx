@@ -10,6 +10,14 @@ const STATUS_LABELS = {
   cancelled: 'Cancelado',
 };
 
+// Mismas transiciones que valida la API; "Enviado" y "Cancelado" son finales.
+const TRANSITIONS = {
+  pending: ['paid', 'cancelled'],
+  paid: ['shipped', 'cancelled'],
+  shipped: [],
+  cancelled: [],
+};
+
 export default function OrderList() {
   const [orders, setOrders] = useState([]);
   const [total, setTotal] = useState(0);
@@ -158,10 +166,15 @@ export default function OrderList() {
                     <select
                       className={`status status-${order.status}`}
                       value={order.status}
+                      disabled={TRANSITIONS[order.status].length === 0}
                       onChange={(e) => changeStatus(order._id, e.target.value)}
                     >
                       {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                        <option key={value} value={value}>
+                        <option
+                          key={value}
+                          value={value}
+                          disabled={value !== order.status && !TRANSITIONS[order.status].includes(value)}
+                        >
                           {label}
                         </option>
                       ))}

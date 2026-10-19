@@ -7,7 +7,7 @@ import { Customer } from '../customers/customer.schema';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { buildSearchRegex } from '../common/search-regex';
 import { ListOrdersDto } from './dto/list-orders.dto';
-import { ORDER_STATUSES } from './dto/update-status.dto';
+import { ORDER_STATUSES, STATUS_TRANSITIONS } from './dto/update-status.dto';
 
 // Un producto con menos unidades que este valor se considera de stock bajo.
 const LOW_STOCK_LIMIT = 5;
@@ -134,9 +134,27 @@ export class OrdersService {
   async updateStatus(id: string, status: string) {
     const order = await this.orderModel.findById(id);
     if (!order) throw new NotFoundException('Pedido no encontrado');
-    order.status = status;
-    await order.save();
-    return order;
+    if (order.status === status) return order;
+
+    const from = Object.keys(STATUS_TRANSITIONS).filter((s) => STATUS_TRANSITIONS[s].includes(status));
+    // El estado se cambia solo si sigue siendo uno válido de origen. Así, dos peticiones
+    // simultáneas para cancelar el mismo pedido no devuelven el stock dos veces.
+    const previous = await this.orderModel.findOneAndUpdate(
+      { _id: id, status: { $in: from } },
+      { status },
+    );
+    if (!previous) {
+      throw new BadRequestException(`No se puede pasar un pedido de ${order.status} a ${status}`);
+    }
+
+    if (status === 'cancelled') {
+      await Promise.all(
+        previous.items.map((item) =>
+          this.productModel.updateOne({ _id: item.productId }, { $inc: { stock: item.quantity } }),
+        ),
+      );
+    }
+    return this.orderModel.findById(id);
   }
 
   // Indicadores generales. Los pedidos cancelados no cuentan como ingreso.
