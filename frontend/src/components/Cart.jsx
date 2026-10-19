@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { get, post } from '../api';
 import { useCart } from '../context/CartContext';
 import { formatMoney, toCents } from '../format';
+import CustomerSelect from './CustomerSelect';
 import QuantityControl from './QuantityControl';
 
 export default function Cart() {
@@ -54,14 +55,7 @@ export default function Cart() {
     <div className="cart">
       <h2>Carrito ({cart.length})</h2>
 
-      <select value={customerId} onChange={(e) => setCustomerId(e.target.value)}>
-        <option value="">-- Cliente --</option>
-        {customers.map((c) => (
-          <option key={c._id} value={c._id}>
-            {c.name} ({c.email})
-          </option>
-        ))}
-      </select>
+      <CustomerSelect customers={customers} value={customerId} onChange={setCustomerId} />
 
       {cart.length === 0 && <p className="muted">El carrito está vacío</p>}
 

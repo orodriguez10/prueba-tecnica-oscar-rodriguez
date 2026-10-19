@@ -65,6 +65,13 @@ input:focus, select:focus, button:focus-visible { outline: 2px solid #a5b4fc; ou
 
 /* Carrito */
 .cart { position: sticky; top: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 12px; box-shadow: var(--shadow); }
+.combo { position: relative; }
+.combo input { width: 100%; box-sizing: border-box; }
+.combo-list { position: absolute; z-index: 10; left: 0; right: 0; top: calc(100% + 4px); max-height: 240px; overflow-y: auto; margin: 0; padding: 4px; list-style: none; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow); }
+.cart .combo-list { max-height: 240px; }
+.cart .combo-list li { display: block; padding: 8px 10px; border: 0; border-radius: 6px; cursor: pointer; font-size: 13px; }
+.cart .combo-list li.active { background: #eef2ff; }
+.combo-empty { color: var(--muted, #6b7280); cursor: default !important; }
 .cart h2 { margin: 0; font-size: 18px; }
 .cart ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; max-height: 45vh; overflow-y: auto; }
 .cart li { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; font-size: 13px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
