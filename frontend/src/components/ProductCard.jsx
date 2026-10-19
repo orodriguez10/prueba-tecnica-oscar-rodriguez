@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { maxQuantity } from '../context/CartContext';
 import QuantityControl from './QuantityControl';
 import { formatMoney } from '../format';
 
@@ -20,7 +21,7 @@ function ProductCard({ product, quantity, onAdd, onDecrease }) {
         {quantity > 0 ? (
           <QuantityControl
             quantity={quantity}
-            max={product.stock}
+            max={maxQuantity(product)}
             onDecrease={() => onDecrease(product._id, -1)}
             onIncrease={() => onAdd(product)}
           />

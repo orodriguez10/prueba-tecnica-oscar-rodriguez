@@ -2,6 +2,10 @@ import { createContext, useCallback, useContext, useMemo, useState } from 'react
 
 const CartContext = createContext(null);
 
+// Igual que el máximo por producto que acepta la API en un pedido.
+const MAX_PER_PRODUCT = 10;
+export const maxQuantity = (product) => Math.min(product.stock, MAX_PER_PRODUCT);
+
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
   // Sube cada vez que se completa un pedido, para que las listas recarguen el stock.
@@ -11,7 +15,7 @@ export function CartProvider({ children }) {
     setCart((prev) => {
       const existing = prev.find((item) => item._id === product._id);
       if (existing) {
-        if (existing.quantity >= product.stock) return prev;
+        if (existing.quantity >= maxQuantity(product)) return prev;
         return prev.map((item) =>
           item._id === product._id ? { ...item, quantity: item.quantity + 1 } : item
         );
@@ -24,13 +28,13 @@ export function CartProvider({ children }) {
     setCart((prev) => prev.filter((item) => item._id !== productId));
   }, []);
 
-  // Suma o resta unidades; no pasa del stock y el producto se quita al llegar a 0.
+  // Suma o resta unidades; no pasa del stock ni del máximo por producto y el producto se quita al llegar a 0.
   const changeQuantity = useCallback((productId, delta) => {
     setCart((prev) =>
       prev
         .map((item) =>
           item._id === productId
-            ? { ...item, quantity: Math.min(item.quantity + delta, item.stock) }
+            ? { ...item, quantity: Math.min(item.quantity + delta, maxQuantity(item)) }
             : item
         )
         .filter((item) => item.quantity > 0)

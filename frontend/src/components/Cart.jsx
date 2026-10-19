@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { get, post } from '../api';
-import { useCart } from '../context/CartContext';
+import { maxQuantity, useCart } from '../context/CartContext';
 import { formatMoney, toCents } from '../format';
 import CustomerSelect from './CustomerSelect';
 import QuantityControl from './QuantityControl';
@@ -65,7 +65,7 @@ export default function Cart() {
             <span className="cart-name">{item.name}</span>
             <QuantityControl
               quantity={item.quantity}
-              max={item.stock}
+              max={maxQuantity(item)}
               onDecrease={() => changeQuantity(item._id, -1)}
               onIncrease={() => changeQuantity(item._id, 1)}
             />
