@@ -16,7 +16,7 @@ export class CreateOrderItemDto {
 
   @IsInt()
   @Min(1)
-  @Max(1000)
+  @Max(10)
   quantity: number;
 }
 
