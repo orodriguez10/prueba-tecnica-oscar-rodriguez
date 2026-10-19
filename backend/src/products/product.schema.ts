@@ -17,7 +17,12 @@ export class Product {
   @Prop({ required: true })
   price: number;
 
-  @Prop({ default: 0 })
+  // El stock son unidades enteras; el validador evita decimales en cualquier escritura que no pase por el DTO.
+  @Prop({
+    default: 0,
+    min: 0,
+    validate: { validator: Number.isInteger, message: 'stock debe ser un entero' },
+  })
   stock: number;
 }
 
